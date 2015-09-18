@@ -5,9 +5,9 @@
 
 #include "utils/configuration/configuration.hpp"
 #include "utils/logging/easylogging++.h"
-#include "game/map.hpp"
-#include "game/player.hpp"
 #include "managers/texture_manager.hpp"
+#include "managers/font_manager.hpp"
+#include "game/game.hpp"
 
 _INITIALIZE_EASYLOGGINGPP
 
@@ -23,22 +23,10 @@ int main()
   window.setFramerateLimit(60);
 
   texture::TextureManager::init("resources/textures/");
-  game::PlayerPtr player {new game::Player};
-  game::Map map { {window_width, window_height}, "resources/map/1", player };
+  font::FontManager::init("resources/fonts/");
 
-  while(window.isOpen())
-  {
-    sf::Event event;
-    while(window.pollEvent(event))
-    {
-      if(event.type == sf::Event::Closed)
-        window.close();
-    }
-
-    window.clear();
-    window.draw(map);
-    window.display();
-  }
+  game::Game game {window, "resources/map/1"};
+  game.run();
 
   return EXIT_SUCCESS;
 }

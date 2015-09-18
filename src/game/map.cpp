@@ -7,6 +7,7 @@
 #include "utils/utils.hpp"
 #include "managers/texture_manager.hpp"
 #include "game/sprite.hpp"
+#include "game/key_bindings.hpp"
 
 namespace game {
 
@@ -14,14 +15,14 @@ const std::map<MapObjectType, std::string> Map::_typeToFilepath = {
   { MapObjectType::Block, "block.png" }
 };
 
-Map::Map(const sf::Vector2u& resolution, std::string folder, const game::PlayerPtr& player)
+Map::Map(const sf::Vector2u& resolution, std::string folder)
   : _map_info { utils::ensureDirectoryEnd(folder) + "info" }
-  , _player {player}
   , _object_size { (float)resolution.x / _nbr_tiles_x, (float)resolution.y / _nbr_tiles_y }
+  , _player { _object_size }
 {
   createField(folder);
 
-  _player->setPosition( mapPosToPixelPos( getPlayerStartingPosition() ) );
+  _player.setPosition( mapPosToPixelPos( getPlayerStartingPosition() ) );
 }
 
 void Map::createField(const std::string& folder)
@@ -60,7 +61,7 @@ void Map::createField(const std::string& folder)
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
   // Find objects to draw from from player position (camera's centered on player)
-  const sf::Vector2u player_pos = pixelPosToMapPos(_player->getPosition());
+  const sf::Vector2u player_pos = pixelPosToMapPos(_player.getPosition());
 
   const unsigned int start_x = utils::maths::safeSubstraction(player_pos.x, _nbr_tiles_x / 2);
   const unsigned int end_x   = std::min(start_x + _nbr_tiles_x, static_cast<unsigned int>(_objects.front().size() - 1));
@@ -80,7 +81,7 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
   }
 
   // Draw player
-  target.draw(*_player.get(), states);
+  target.draw(_player, states);
 }
 
 MapObjectType Map::colorToMapObjectType(sf::Color color)
@@ -107,6 +108,27 @@ sf::Vector2f Map::mapPosToPixelPos( const sf::Vector2u& map_pos ) const
 {
   return { map_pos.x * _object_size.x,
            map_pos.y * _object_size.y };
+}
+
+void Map::update(const sf::Time& elapsed_time)
+{
+  _player.update(elapsed_time);
+
+  // Update player position
+  const float player_x_movement = _player.getHorizontalSpeed() * elapsed_time.asMilliseconds();
+  sf::Vector2f new_player_position = _player.getPosition();
+  new_player_position.x += player_x_movement;
+  _player.setPosition( new_player_position );
+}
+
+void Map::handleKeyboardEvent( const sf::Event& /*event*/ )
+{
+  if(sf::Keyboard::isKeyPressed( KeyBindings::get(Action::MoveRight) ))
+    _player.setMovingTo(Direction::Right);
+  else if(sf::Keyboard::isKeyPressed( KeyBindings::get(Action::MoveLeft) ))
+    _player.setMovingTo(Direction::Left);
+  else
+    _player.stopMoving();
 }
 
 } // namespace game

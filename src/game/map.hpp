@@ -9,6 +9,7 @@
 #include "game/player.hpp"
 #include "game/map_object.hpp"
 #include "utils/configuration/configuration.hpp"
+#include "events/keyword_event_handler.hpp"
 
 namespace game {
 
@@ -16,11 +17,17 @@ enum class MapObjectType {
   None, Player, Block
 };
 
-class Map final : public sf::Drawable
+class Map final : public sf::Drawable,
+                  public event::KeywordEventHandler
 {
   public:
 
-    Map(const sf::Vector2u& resolution, std::string folder, const game::PlayerPtr& player);
+    Map(const sf::Vector2u& resolution, std::string folder);
+
+    /*! Update map relative to last update */
+    void update(const sf::Time& elapsed_time);
+
+    void handleKeyboardEvent( const sf::Event& event );
 
   protected:
 
@@ -39,7 +46,7 @@ class Map final : public sf::Drawable
 
     std::vector<std::vector<MapObjectPtr>> _objects;
     utils::Configuration _map_info;
-    const game::PlayerPtr _player;
+    game::Player _player;
 
     /*! Size of a map object
      *  \note calculated from given resolution and number of objects to draw per line
