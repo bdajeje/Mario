@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "game/animations/text_animation.hpp"
+#include "game/text_property.hpp"
 
 namespace animation {
 
@@ -11,18 +12,13 @@ class ZoomTextAnimation final : public TextAnimation
 {
   public:
 
-    ZoomTextAnimation(const game::TextProperty& properties, std::chrono::milliseconds duration, unsigned int to_size);
+    ZoomTextAnimation(const std::shared_ptr<sf::Text>& target, std::chrono::milliseconds duration, unsigned int to_size);
 
-    void update(const sf::Time& elapsed_time) override;
-
-    bool finished() const override;
+    virtual void update(const sf::Time& elapsed_time) override;
 
   private:
 
-    /*! Duration in milliseconds */
-    long int _duration;
     unsigned int _to_size;
-    sf::Time _elapsed_time {sf::Time::Zero};
 };
 
 }

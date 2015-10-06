@@ -1,12 +1,10 @@
 #include "text_animation.hpp"
 
-#include "managers/font_manager.hpp"
-
 namespace animation {
 
-TextAnimation::TextAnimation(const game::TextProperty& properties)
-{
-  game::TextProperty::create(_text, properties);
-}
+TextAnimation::TextAnimation(std::chrono::milliseconds duration, const std::shared_ptr<sf::Text>& target )
+  : Animation {duration}
+  , _text { target }
+{}
 
 }

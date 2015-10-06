@@ -2,22 +2,29 @@
 
 namespace animation {
 
-ZoomTextAnimation::ZoomTextAnimation(const game::TextProperty& properties, std::chrono::milliseconds duration, unsigned int to_size)
-  : TextAnimation { properties }
-  , _duration { duration.count() }
+ZoomTextAnimation::ZoomTextAnimation(const std::shared_ptr<sf::Text>& target, std::chrono::milliseconds duration, unsigned int to_size)
+  : TextAnimation { duration, target }
   , _to_size {to_size}
 {}
 
-void ZoomTextAnimation::update(const sf::Time& elapsed_time)
+void ZoomTextAnimation::update(const sf::Time& /*elapsed_time*/)
 {
-  _elapsed_time += elapsed_time;
-  const unsigned int new_size = _elapsed_time.asMilliseconds() * _to_size / _duration;
-  _text.setCharacterSize(new_size);
-}
+  if( !_text )
+    return;
 
-bool ZoomTextAnimation::finished() const
-{
-  return _elapsed_time.asMilliseconds() >= _duration;
+  // Save bounds before resizing
+  const sf::FloatRect old_bounds = _text->getGlobalBounds();
+
+  // Update character size
+  const unsigned int new_size = _clock.getElapsedTime().asMilliseconds() * _to_size / _duration;
+  _text->setCharacterSize(new_size);
+
+  // Get new bounds
+  const sf::FloatRect new_bounds = _text->getGlobalBounds();
+
+  // Replace text correctly because of resizing
+  _text->move( (old_bounds.width - new_bounds.width) / 2,
+               (old_bounds.height - new_bounds.height) );
 }
 
 }

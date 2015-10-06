@@ -7,7 +7,6 @@ Game::Game(sf::RenderWindow& window, std::string map_folder)
   , _map  { _window.getSize(), map_folder }
   , _hud { window.getSize() }
   , _menu { window.getSize(), {0,0} } // \todo set menu correct size and position
-  , _keyboard_event_handler {&_map}
 {}
 
 void Game::run()
@@ -31,28 +30,48 @@ void Game::run()
         {
           if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
             toggleMenu();
-          else
-            _keyboard_event_handler->handleKeyboardEvent(event);
+//          else if(_keyboard_event_handler)
+//            _keyboard_event_handler->handleKeyboardEvent(event);
         }
       }
     }
 
-    if( isRunning() )
+    // Get elapsed time since last update
+    const sf::Time elapsed_time = _timer.getElapsedTime() - last_update;
+
+    switch( _state )
     {
-      // Get elapsed time since last update
-      const sf::Time elapsed_time = _timer.getElapsedTime() - last_update;
+      case State::StartAnimation:
+      {
+        _hud.update(elapsed_time);
 
-      // Update objects
-      _hud.setTime( _timer.getElapsedTime().asSeconds() );
-      _map.update( elapsed_time );
+        // Start animation finished? Start the game
+        if(!_hud.isInStartAnimation())
+          startGame();
 
-      // Save last update time
-      last_update = _timer.getElapsedTime();
+        break;
+      }
+      case State::Running:
+      {
+        // Update objects
+        _hud.setTime( _timer.getElapsedTime().asSeconds() );
+        _map.update( elapsed_time );
+      }
     }
+
+    // Save last update time
+    last_update = _timer.getElapsedTime();
 
     // Draw everything
     draw();
   }
+}
+
+void Game::startGame()
+{
+  _timer.restart();
+  _state = State::Running;
+  //_keyboard_event_handler = &_map;
 }
 
 void Game::draw()
@@ -73,19 +92,24 @@ bool Game::isRunning() const
   return _state == State::Running;
 }
 
+bool Game::isInStartAnimation() const
+{
+  return _state == State::StartAnimation;
+}
+
 void Game::toggleMenu()
 {
-  if( isRunning() )
+  if( isRunning() || isInStartAnimation() )
   {
     _state = State::Menu;
     _timer.pause();
-    _keyboard_event_handler = &_menu;
+    //_keyboard_event_handler = &_menu;
   }
   else
   {
-    _state = State::Running;
+    _state = (_hud.isInStartAnimation()) ? State::StartAnimation : State::Running;
     _timer.start();
-    _keyboard_event_handler = &_map;
+    //_keyboard_event_handler = &_map;
   }
 }
 

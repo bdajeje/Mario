@@ -13,8 +13,8 @@ class Drawable : public sf::Drawable
 
     virtual ~Drawable() = default;
 
-    virtual void setPosition(const sf::Vector2f& position) = 0;
-    virtual void setSize(float x, float y) = 0;
+    virtual void setPosition(const sf::Vector2f& position) {}
+    virtual void setSize(float /*x*/, float /*y*/) {}
 
     virtual const sf::Vector2f& getPosition() const = 0;
 };

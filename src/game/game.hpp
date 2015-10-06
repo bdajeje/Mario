@@ -13,7 +13,7 @@
 namespace game {
 
 enum class State {
-  Running, Menu
+  Running, Menu, StartAnimation
 };
 
 class Game final
@@ -25,15 +25,17 @@ class Game final
     void run();
 
     bool isRunning() const;
+    bool isInStartAnimation() const;
 
   private:
 
     void draw();
     void toggleMenu();
+    void startGame();
 
   private:
 
-    State _state { State::Running };
+    State _state { State::StartAnimation };
     sf::RenderWindow& _window;
     Map _map;
     HUD _hud;
@@ -42,7 +44,7 @@ class Game final
     utils::time::Timer _timer;
 
     /*! How's responsible for handling keyboard events */
-    event::KeywordEventHandler* _keyboard_event_handler;
+    //event::KeywordEventHandler* _keyboard_event_handler {nullptr};
 };
 
 }

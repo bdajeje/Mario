@@ -1,28 +1,31 @@
 #ifndef ANIMATION_HPP
 #define ANIMATION_HPP
 
-#include <string>
-#include <vector>
+#include <chrono>
 
 #include <SFML/Graphics/Drawable.hpp>
-#include <SFML/System/Time.hpp>
+#include <SFML/System/Clock.hpp>
 
 namespace animation {
 
-/*! Animation abstract class */
 class Animation
 {
   public:
 
-    Animation() = default;
+    Animation(std::chrono::milliseconds duration)
+      : _duration { duration.count() }
+    {}
 
     virtual ~Animation() = default;
 
     virtual void update(const sf::Time& elapsed_time) = 0;
 
-    virtual bool finished() const = 0;
+    virtual bool finished() const { return _clock.getElapsedTime().asMilliseconds() >= _duration; }
 
-    virtual const sf::Drawable& drawable() const = 0;
+  protected:
+
+    long int _duration; // in milliseconds
+    sf::Clock _clock;
 };
 
 }

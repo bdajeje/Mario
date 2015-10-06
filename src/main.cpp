@@ -7,6 +7,7 @@
 #include "utils/logging/easylogging++.h"
 #include "managers/texture_manager.hpp"
 #include "managers/font_manager.hpp"
+#include "managers/sound_manager.hpp"
 #include "game/game.hpp"
 
 _INITIALIZE_EASYLOGGINGPP
@@ -24,9 +25,12 @@ int main()
 
   texture::TextureManager::init("resources/textures/");
   font::FontManager::init("resources/fonts/");
+  sound::SoundManager::init("resources/sounds/");
 
-  game::Game game {window, "resources/map/1"};
-  game.run();
+  {
+    game::Game game {window, "resources/map/1"};
+    game.run();
+  }
 
   return EXIT_SUCCESS;
 }

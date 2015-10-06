@@ -1,58 +1,46 @@
 #include "hud.hpp"
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
-
 #include "managers/font_manager.hpp"
+#include "managers/sound_manager.hpp"
+#include "utils/utils.hpp"
 
 namespace game {
 
 HUD::HUD(const sf::Vector2u& size)
   : _size { size }
+  , _text_countdown {new sf::Text}
 {
-  game::TextProperty text_properties { "", "consolas.ttf", sf::Color::Red, 20 };
+  game::TextProperty text_properties { "", "consolas.ttf", sf::Color::White, 20 };
   text_properties.create( _text_elapsed_time, text_properties );
   text_properties.create( _text_score, text_properties );
+  text_properties.create( *_text_countdown, text_properties );
 
   setScore(0);
   setTime(0.f);
 
-  updateTextPositions();
-
-  const size_t countdown_time {3};
-  _countdown_animations.reserve(countdown_time);
-  text_properties.size = 5;
-  for( size_t i = countdown_time; i > 0; --i )
-  {
-    text_properties.text = std::to_string(i);
-    _countdown_animations.emplace_back( text_properties, std::chrono::milliseconds(1000), 30 );
-  }
-}
-
-void HUD::updateTextPositions()
-{
   static const unsigned int padding {10};
   _text_elapsed_time.setPosition( _position.x + padding, _position.y + padding );
   _text_score.setPosition( _position.x + _size.x - _text_score.getGlobalBounds().width - padding,
                            _position.y + padding );
+
+  _beep_sound.setBuffer( sound::SoundManager::get("beep.wav") );
+  _beep_sound.play();
+
+  setCountdownText( _secs_before_start );
+  startCountdownAnimation();
 }
 
-void HUD::setPosition(const sf::Vector2f& position)
+void HUD::setCountdownText(short value)
 {
-  _position = position;
-  updateTextPositions();
+  _text_countdown->setCharacterSize( 5 );
+  _text_countdown->setString( std::to_string(value) );
+  _text_countdown->setPosition( (_size.x - _text_countdown->getGlobalBounds().width) / 2,
+                                (_size.y - _text_countdown->getGlobalBounds().height) / 2 );
 }
 
-void HUD::setSize(float x, float y)
+void HUD::startCountdownAnimation()
 {
-  if( x == _size.x && y == _size.y )
-    return;
-
-  _size.x = x;
-  _size.y = y;
-
-  updateTextPositions();
+  _countdown_animation.reset( new animation::ZoomTextAnimation( _text_countdown, std::chrono::milliseconds(1000), 100 ) );
 }
 
 void HUD::setScore(unsigned int score)
@@ -62,41 +50,44 @@ void HUD::setScore(unsigned int score)
 
 void HUD::setTime(float time)
 {
-  std::stringstream stream;
-  stream << std::fixed << std::setprecision(1) << time;
-
-  _text_elapsed_time.setString( "Time: " + stream.str() );
+  _text_elapsed_time.setString( "Time: " + utils::string::convert(time, 1) );
 }
 
 void HUD::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
   target.draw( _text_elapsed_time, states );
   target.draw( _text_score, states );
-  drawCountdown(target, states);
-}
 
-void HUD::drawCountdown(sf::RenderTarget& target, sf::RenderStates states) const
-{
-  if( _countdown_offset >= _countdown_animations.size() )
-    return;
-
-  target.draw( _countdown_animations[_countdown_offset].drawable(), states );
+  if( _text_countdown )
+    target.draw( *_text_countdown, states );
 }
 
 void HUD::update(const sf::Time& elapsed_time)
 {
-  updateCountdown( elapsed_time );
-}
+  if(_countdown_animation)
+  {
+    // Update countdown animation
+    _countdown_animation->update( elapsed_time );
 
-void HUD::updateCountdown(const sf::Time& elapsed_time)
-{
-  if( _countdown_offset >= _countdown_animations.size() )
-    return;
-
-  animation::ZoomTextAnimation& animation = _countdown_animations[_countdown_offset];
-  animation.update(elapsed_time);
-  if(animation.finished())
-    _countdown_offset++;
+    // Current animation finished? Apply next one
+    if( _countdown_animation->finished() )
+    {
+      const int countdown = std::stoi(_text_countdown->getString().toAnsiString()) - 1;
+      if(countdown == 0)
+      {
+        _countdown_animation.reset();
+        _text_countdown.reset();
+        _beep_sound.setBuffer( sound::SoundManager::get("beep_start.wav") );
+        _beep_sound.play();
+      }
+      else
+      {
+        setCountdownText( countdown );
+        startCountdownAnimation();
+        _beep_sound.play();
+      }
+    }
+  }
 }
 
 }

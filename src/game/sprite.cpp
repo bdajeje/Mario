@@ -20,4 +20,9 @@ void Sprite::setSize(float x, float y)
                     y / _sprite.getGlobalBounds().height );
 }
 
+sf::Vector2f Sprite::getSize() const
+{
+  return {_sprite.getGlobalBounds().width, _sprite.getGlobalBounds().height};
+}
+
 }

@@ -2,7 +2,7 @@
 #define UTILS_DIRECTIONS_HPP
 
 enum class Direction {
-  Left, Right, Up, Down
+  None, Left, Right, Up, Down
 };
 
 #endif // UTILS_DIRECTIONS_HPP

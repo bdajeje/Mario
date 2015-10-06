@@ -1,10 +1,11 @@
-#ifndef TEXTANIMATION_HPP
-#define TEXTANIMATION_HPP
+#ifndef TEXT_ANIMATION_HPP
+#define TEXT_ANIMATION_HPP
 
-#include <SFML/Graphics.hpp>
+#include <memory>
+
+#include <SFML/Graphics/Text.hpp>
 
 #include "game/animations/animation.hpp"
-#include "game/text_property.hpp"
 
 namespace animation {
 
@@ -12,15 +13,15 @@ class TextAnimation : public Animation
 {
   public:
 
-    TextAnimation(const game::TextProperty& properties);
+    TextAnimation( std::chrono::milliseconds duration, const std::shared_ptr<sf::Text>& target );
 
-    virtual const sf::Drawable& drawable() const override { return _text; }
+    virtual ~TextAnimation() = default;
 
   protected:
 
-    sf::Text _text;
+    std::shared_ptr<sf::Text> _text;
 };
 
 }
 
-#endif // TEXTANIMATION_HPP
+#endif // TEXT_ANIMATION_HPP

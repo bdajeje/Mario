@@ -22,10 +22,8 @@ Configuration::Configuration(const std::string& conf_file_path)
   parts.reserve(2);
   for( std::string& line : lines )
   {
-    // Remove possible useless whitespaces
-    boost::algorithm::trim(line);
-
     // Empty line or comment
+    boost::algorithm::trim(line);
     if( line.empty() || line.front() == '#' )
       continue;
 
@@ -34,8 +32,12 @@ Configuration::Configuration(const std::string& conf_file_path)
     if(parts.size() != 2)
       continue;
 
+    // Remove possible useless whitespaces
+    const std::string key   = boost::algorithm::trim_copy(parts.front());
+    const std::string value = boost::algorithm::trim_copy(parts.back());
+
     // Adding conf to results
-    _configs.emplace( parts.front(), parts.back() );
+    _configs.emplace( key, value );
   }
 }
 
