@@ -72,8 +72,8 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
   // Find objects to draw depending on camera position (draw only visibled objects)
   const sf::Vector2i camera_pos = pixelPosToMapPos(_view.getCenter());
 
-  const unsigned int start_x = utils::maths::safeSubstraction(camera_pos.x, _nbr_tiles_x / 2);
-  const unsigned int end_x   = std::min(start_x + _nbr_tiles_x, static_cast<unsigned int>(_objects.front().size() - 1));
+  const unsigned int start_x = utils::maths::safeSubstraction(camera_pos.x, (_nbr_tiles_x / 2) + 1);
+  const unsigned int end_x   = std::min(start_x + _nbr_tiles_x, static_cast<unsigned int>(_objects.front().size() - 1)) + 2;
 
   const unsigned int start_y = utils::maths::safeSubstraction(camera_pos.y, _nbr_tiles_y / 2);
   const unsigned int end_y   = std::min(start_y + _nbr_tiles_y, static_cast<unsigned int>(_objects.size() - 1));
